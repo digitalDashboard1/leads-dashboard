@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>דשבורד לידים</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      direction: rtl;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f5f5f5;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+    h1 {
+      text-align: center;
+      font-size: 22px;
+      color: #333;
+      margin-bottom: 1.5rem;
+      font-weight: 500;
+    }
+    .filter-card {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .filter-title {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 14px;
+      font-weight: 500;
+    }
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .filter-group label {
+      font-size: 12px;
+      color: #888;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .filter-group input {
+      width: 100%;
+      font-size: 14px;
+      padding: 6px 8px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-family: inherit;
+    }
+    .apply-btn {
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 9px 24px;
+      font-size: 14px;
+      cursor: pointer;
+      color: #333;
+      width: 100%;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+    .apply-btn:hover { background: #f5f5f5; }
+    .range-note {
+      font-size: 11px;
+      color: #aaa;
+      text-align: center;
+      margin-top: 8px;
+    }
+    .companies-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .company-card {
+      border-radius: 12px;
+      padding: 1.4rem;
+      position: relative;
+    }
+    .card-mediwho    { background: #FFF3E0; border: 1px solid #FFCC80; }
+    .card-electro    { background: #FFFDE7; border: 1px solid #FFE57F; }
+    .card-mashkantok { background: #E8F5E9; border: 1px solid #A5D6A7; }
+
+    .logo-wrapper {
+      width: 56px; height: 56px;
+      margin-bottom: 14px;
+      position: relative;
+      cursor: pointer;
+      display: block;
+    }
+    .logo-wrapper input[type=file] { display: none; }
+    .logo-box {
+      width: 56px; height: 56px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      font-weight: 600;
+      overflow: hidden;
+    }
+    .logo-box img { width: 100%; height: 100%; object-fit: contain; display: none; }
+    .logo-hint {
+      position: absolute;
+      bottom: -3px; right: -3px;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 2px 5px;
+      font-size: 9px;
+      color: #888;
+      pointer-events: none;
+    }
+
+    .company-name  { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .company-crm   { font-size: 11px; margin-bottom: 18px; }
+    .name-mediwho  { color: #E65100; } .crm-mediwho  { color: #BF360C; }
+    .name-electro  { color: #1565C0; } .crm-electro  { color: #1976D2; }
+    .name-mashkantok { color: #1B5E20; } .crm-mashkantok { color: #2E7D32; }
+
+    .lead-count { font-size: 52px; font-weight: 600; line-height: 1; margin-bottom: 4px; }
+    .count-mediwho    { color: #BF360C; }
+    .count-electro    { color: #1565C0; }
+    .count-mashkantok { color: #1B5E20; }
+
+    .lead-label { font-size: 13px; }
+    .llabel-mediwho    { color: #BF360C; }
+    .llabel-electro    { color: #1976D2; }
+    .llabel-mashkantok { color: #2E7D32; }
+
+    .status-row {
+      display: flex; align-items: center; gap: 6px;
+      margin-top: 14px; padding-top: 12px;
+      border-top: 1px solid rgba(0,0,0,0.07);
+      font-size: 11px;
+    }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .dot-loading { background: #FFA726; animation: pulse 1s infinite; }
+    .dot-success { background: #66BB6A; }
+    .dot-error   { background: #EF5350; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    @media (max-width: 600px) {
+      .filter-grid { grid-template-columns: 1fr 1fr; }
+      .companies-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<h1><i class="fa-solid fa-chart-bar"></i> דשבורד לידים</h1>
+
+<div class="filter-card">
+  <div class="filter-title"><i class="fa-regular fa-calendar"></i> סינון לפי תאריך ושעה</div>
+  <div class="filter-grid">
+    <div class="filter-group"><label>תאריך התחלה</label><input type="date" id="startDate" /></div>
+    <div class="filter-group"><label>תאריך סיום</label><input type="date" id="endDate" /></div>
+    <div class="filter-group"><label>שעת התחלה</label><input type="time" id="startTime" /></div>
+    <div class="filter-group"><label>שעת סיום</label><input type="time" id="endTime" /></div>
+  </div>
+  <button class="apply-btn" onclick="applyFilter()"><i class="fa-solid fa-rotate-right"></i> החל</button>
+  <div class="range-note" id="rangeNote"></div>
+</div>
+
+<div class="companies-grid">
+
+  <!-- Mediwho -->
+  <div class="company-card card-mediwho">
+    <label class="logo-wrapper" title="לחצי להעלאת לוגו">
+      <input type="file" accept="image/*" onchange="uploadLogo(this,'img-mediwho','ltr-mediwho')">
+      <div class="logo-box" style="background:#FFE0B2;">
+        <span id="ltr-mediwho" style="color:#E65100;">M</span>
+        <img id="img-mediwho" alt="Mediwho" />
+      </div>
+      <div class="logo-hint"><i class="fa-solid fa-upload" style="font-size:8px"></i></div>
+    </label>
+    <div class="company-name name-mediwho">Mediwho</div>
+    <div class="company-crm crm-mediwho">Kaveret CRM</div>
+    <div class="lead-count count-mediwho" id="count-mediwho">…</div>
+    <div class="lead-label llabel-mediwho">לידים</div>
+    <div class="status-row">
+      <div class="status-dot dot-loading" id="dot-mediwho"></div>
+      <span class="name-mediwho" id="status-mediwho">טוען...</span>
+    </div>
+  </div>
+
+  <!-- Electro Kopell -->
+  <div class="company-card card-electro">
+    <label class="logo-wrapper" title="לחצי להעלאת לוגו">
+      <input type="file" accept="image/*" onchange="uploadLogo(this,'img-electro','ltr-electro')">
+      <div class="logo-box" style="background:#E3F2FD;">
+        <span id="ltr-electro" style="color:#1565C0;">E</span>
+        <img id="img-electro" alt="Electro Kopell" />
+      </div>
+      <div class="logo-hint"><i class="fa-solid fa-upload" style="font-size:8px"></i></div>
+    </label>
+    <div class="company-name name-electro">Electro Kopell</div>
+    <div class="company-crm crm-electro">Google Sheets</div>
+    <div class="lead-count count-electro" id="count-electro">…</div>
+    <div class="lead-label llabel-electro">לידים</div>
+    <div class="status-row">
+      <div class="status-dot dot-loading" id="dot-electro"></div>
+      <span class="name-electro" id="status-electro">טוען...</span>
+    </div>
+  </div>
+
+  <!-- משכנתוק -->
+  <div class="company-card card-mashkantok">
+    <label class="logo-wrapper" title="לחצי להעלאת לוגו">
+      <input type="file" accept="image/*" onchange="uploadLogo(this,'img-mashkantok','ltr-mashkantok')">
+      <div class="logo-box" style="background:#C8E6C9;">
+        <span id="ltr-mashkantok" style="color:#1B5E20;">מ</span>
+        <img id="img-mashkantok" alt="משכנתוק" />
+      </div>
+      <div class="logo-hint"><i class="fa-solid fa-upload" style="font-size:8px"></i></div>
+    </label>
+    <div class="company-name name-mashkantok">משכנתוק</div>
+    <div class="company-crm crm-mashkantok">snpv CRM</div>
+    <div class="lead-count count-mashkantok" id="count-mashkantok">…</div>
+    <div class="lead-label llabel-mashkantok">לידים</div>
+    <div class="status-row">
+      <div class="status-dot dot-loading" id="dot-mashkantok"></div>
+      <span class="name-mashkantok" id="status-mashkantok">טוען...</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const PROXY = "https://script.google.com/macros/s/AKfycbz0YJZ3beOt12PA64mK5ohnftJDqY9fMFBr2PgwRpG-OxJox9v1bbYTQXRNI7CR65K-/exec";
+
+function uploadLogo(input, imgId, ltrId) {
+  const file = input.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = e => {
+    document.getElementById(imgId).src = e.target.result;
+    document.getElementById(imgId).style.display = 'block';
+    document.getElementById(ltrId).style.display = 'none';
+  };
+  r.readAsDataURL(file);
+}
+
+function getDefault24h() {
+  const now = new Date();
+  return { start: new Date(now - 24*60*60*1000), end: now };
+}
+function fmt(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function fmtTime(d) {
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+function initDefaults() {
+  const {start, end} = getDefault24h();
+  document.getElementById('startDate').value = fmt(start);
+  document.getElementById('startTime').value = fmtTime(start);
+  document.getElementById('endDate').value   = fmt(end);
+  document.getElementById('endTime').value   = fmtTime(end);
+  updateRangeNote(start, end);
+}
+function updateRangeNote(s, e) {
+  const f = d => d.toLocaleString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  document.getElementById('rangeNote').textContent = `טווח פעיל: ${f(s)} – ${f(e)}`;
+}
+function setStatus(id, type, text) {
+  document.getElementById('dot-'+id).className = 'status-dot '+(type==='loading'?'dot-loading':type==='success'?'dot-success':'dot-error');
+  document.getElementById('status-'+id).textContent = text;
+}
+
+async function fetchCompany(company, startDT, endDT) {
+  setStatus(company, 'loading', 'טוען...');
+  document.getElementById('count-'+company).textContent = '…';
+  try {
+    const url = `${PROXY}?company=${company}&start=${encodeURIComponent(startDT)}&end=${encodeURIComponent(endDT)}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    document.getElementById('count-'+company).textContent = data.count;
+    setStatus(company, 'success', 'עודכן ' + new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}));
+  } catch(err) {
+    document.getElementById('count-'+company).textContent = '!';
+    setStatus(company, 'error', 'שגיאה: ' + err.message);
+  }
+}
+
+function fetchAll(s, e) {
+  fetchCompany('mediwho',    s, e);
+  fetchCompany('electro',    s, e);
+  fetchCompany('mashkantok', s, e);
+}
+
+function applyFilter() {
+  const sd = document.getElementById('startDate').value;
+  const st = document.getElementById('startTime').value;
+  const ed = document.getElementById('endDate').value;
+  const et = document.getElementById('endTime').value;
+  if (!sd || !ed) { alert('יש למלא תאריך התחלה וסיום'); return; }
+  updateRangeNote(new Date(sd+'T'+st), new Date(ed+'T'+et));
+  fetchAll(sd+' '+st, ed+' '+et);
+}
+
+initDefaults();
+const {start, end} = getDefault24h();
+fetchAll(fmt(start)+' '+fmtTime(start), fmt(end)+' '+fmtTime(end));
+</script>
+</body>
+</html>
