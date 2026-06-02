@@ -138,6 +138,312 @@ initDefaults();
 const {start, end} = getDefault24h();
 fetchAll(fmt(start)+' '+fmtTime(start), fmt(end)+' '+fmtTime(end));
 </script>
+  <!-- ============================================================
+     סקשן דרושים - להוסיף לדשבורד
+     הוראות: הדביקי את כל הקוד הזה לפני </body> בקובץ leads_dashboard.html
+     החליפי YOUR_TOKEN_HERE בטוקן שלך (מופיע פעם אחת בתחתית)
+     ============================================================ -->
+
+<style>
+  /* ---- סקשן דרושים ---- */
+  .darushim-section {
+    max-width: 900px;
+    margin: 2rem auto 0;
+    direction: rtl;
+    font-family: 'Segoe UI', Arial, sans-serif;
+  }
+
+  .darushim-filter-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .darushim-filter-title {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+
+  .darushim-filter-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+
+  .darushim-btn {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 9px 24px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #333;
+    font-family: inherit;
+    transition: background 0.15s;
+  }
+
+  .darushim-btn:hover { background: #f5f5f5; }
+  .darushim-btn.active { background: #f0f0f0; border-color: #999; font-weight: 600; }
+
+  .darushim-custom-row {
+    display: none;
+    gap: 12px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+
+  .darushim-custom-row.visible { display: flex; }
+
+  .darushim-custom-row .filter-group label {
+    font-size: 12px;
+    color: #888;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .darushim-custom-row .filter-group input {
+    width: 100%;
+    font-size: 14px;
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-family: inherit;
+  }
+
+  .darushim-apply-btn {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 9px 24px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #333;
+    font-family: inherit;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+
+  .darushim-apply-btn:hover { background: #f5f5f5; }
+
+  .darushim-range-note {
+    font-size: 11px;
+    color: #aaa;
+    text-align: center;
+    margin-top: 8px;
+  }
+
+  /* הכרטיס של דרושים */
+  .darushim-card {
+    background: #EEF2FF;
+    border: 1px solid #C7D2FE;
+    border-radius: 12px;
+    padding: 1.4rem;
+    position: relative;
+  }
+
+  .darushim-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .darushim-icon {
+    width: 80px;
+    height: 56px;
+    border-radius: 8px;
+    background: #C7D2FE;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+  }
+
+  .darushim-title-block {}
+  .darushim-name { font-size: 14px; font-weight: 600; color: #3730A3; margin-bottom: 2px; }
+  .darushim-sub  { font-size: 11px; color: #6366F1; }
+
+  .darushim-count { font-size: 52px; font-weight: 600; line-height: 1; margin-bottom: 4px; color: #3730A3; }
+  .darushim-label { font-size: 13px; color: #4F46E5; }
+
+  .darushim-status-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(99,102,241,0.15);
+    font-size: 11px;
+    color: #6366F1;
+  }
+
+  .darushim-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .darushim-dot-loading { background: #FFA726; animation: pulse 1s infinite; }
+  .darushim-dot-success { background: #66BB6A; }
+  .darushim-dot-error   { background: #EF5350; }
+</style>
+
+<div class="darushim-section">
+
+  <!-- כרטיס הסינון -->
+  <div class="darushim-filter-card">
+    <div class="darushim-filter-title">
+      <i class="fa-regular fa-calendar"></i> סינון דרושים לפי תאריך
+    </div>
+    <div class="darushim-filter-row">
+      <button class="darushim-btn active" id="dBtn-today"  onclick="darushimSetFilter('today')">היום</button>
+      <button class="darushim-btn"        id="dBtn-week"   onclick="darushimSetFilter('week')">7 ימים אחרונים</button>
+      <button class="darushim-btn"        id="dBtn-custom" onclick="darushimToggleCustom()">בחירת תאריכים</button>
+    </div>
+
+    <div class="darushim-custom-row" id="darushimCustomRow">
+      <div class="filter-group"><label>תאריך התחלה</label><input type="date" id="dStartDate" /></div>
+      <div class="filter-group"><label>תאריך סיום</label><input type="date" id="dEndDate" /></div>
+      <button class="darushim-apply-btn" onclick="darushimApplyCustom()">
+        <i class="fa-solid fa-rotate-right"></i> החל
+      </button>
+    </div>
+
+    <div class="darushim-range-note" id="darushimRangeNote"></div>
+  </div>
+
+  <!-- כרטיס הנתון -->
+  <div class="darushim-card">
+    <div class="darushim-header">
+      <div class="darushim-icon">💬</div>
+      <div class="darushim-title-block">
+        <div class="darushim-name">דרושים</div>
+        <div class="darushim-sub">Meta Ads — וואטסאפ</div>
+      </div>
+    </div>
+    <div class="darushim-count" id="darushimCount">…</div>
+    <div class="darushim-label">שיחות שהתחילו</div>
+    <div class="darushim-status-row">
+      <div class="darushim-dot darushim-dot-loading" id="darushimDot"></div>
+      <span id="darushimStatus">טוען...</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  // ===== הגדרות — החליפי את הטוקן =====
+  const TOKEN = 'EAAc6zZAzaUcoBRvyhE3NZBJcctVG3gQ63zegjTEA3N1DjRaWZAergkTDT5LfS636uWjS4wiMmZAsHeKqnzOgWyihsUmVKrLRxLZCSZA2v7Y9mdgKJZBjDPdulnFIrarhM7K2SFEm0VRPlpN28j1nTBDyuR0AQacFQfRf64TjLPhrpf3DaWr2szh6Uht1rsqz2K6qss7SqWbnUv38smLiNnBxnUnN9VOlAxU';
+  const ACCOUNTS = ['act_1091415796254520', 'act_721961574167031'];
+  // ======================================
+
+  let currentFilter = 'today';
+
+  function fmtDate(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+
+  function getDateRange() {
+    const today = new Date();
+    const todayStr = fmtDate(today);
+    if (currentFilter === 'today') {
+      return { since: todayStr, until: todayStr };
+    } else if (currentFilter === 'week') {
+      const w = new Date(today); w.setDate(today.getDate() - 6);
+      return { since: fmtDate(w), until: todayStr };
+    } else {
+      const s = document.getElementById('dStartDate').value;
+      const u = document.getElementById('dEndDate').value;
+      return { since: s || todayStr, until: u || todayStr };
+    }
+  }
+
+  function updateNote(range) {
+    const el = document.getElementById('darushimRangeNote');
+    el.textContent = range.since === range.until
+      ? `תאריך פעיל: ${range.since}`
+      : `טווח פעיל: ${range.since} – ${range.until}`;
+  }
+
+  function setStatus(type, text) {
+    const dot = document.getElementById('darushimDot');
+    dot.className = 'darushim-dot ' + (
+      type === 'loading' ? 'darushim-dot-loading' :
+      type === 'success' ? 'darushim-dot-success' : 'darushim-dot-error'
+    );
+    document.getElementById('darushimStatus').textContent = text;
+  }
+
+  async function fetchAccount(accountId, range) {
+    const url = `https://graph.facebook.com/v21.0/${accountId}/insights?level=campaign&fields=campaign_name,actions&time_range={"since":"${range.since}","until":"${range.until}"}&access_token=${TOKEN}`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
+    let total = 0;
+    (data.data || []).forEach(c => {
+      if (c.campaign_name && c.campaign_name.includes('דרושים')) {
+        (c.actions || []).forEach(a => {
+          if (a.action_type === 'onsite_conversion.messaging_conversation_started_7d') {
+            total += parseInt(a.value || 0);
+          }
+        });
+      }
+    });
+    return total;
+  }
+
+  async function load() {
+    setStatus('loading', 'טוען...');
+    document.getElementById('darushimCount').textContent = '…';
+    const range = getDateRange();
+    updateNote(range);
+    try {
+      const results = await Promise.all(ACCOUNTS.map(acc => fetchAccount(acc, range)));
+      const total = results.reduce((s, v) => s + v, 0);
+      document.getElementById('darushimCount').textContent = total.toLocaleString('he-IL');
+      setStatus('success', 'עודכן ' + new Date().toLocaleTimeString('he-IL', {hour:'2-digit', minute:'2-digit'}));
+    } catch(err) {
+      document.getElementById('darushimCount').textContent = '!';
+      setStatus('error', 'שגיאה: ' + err.message);
+    }
+  }
+
+  window.darushimSetFilter = function(f) {
+    currentFilter = f;
+    ['today','week','custom'].forEach(k => {
+      document.getElementById('dBtn-' + k).classList.toggle('active', k === f);
+    });
+    if (f !== 'custom') {
+      document.getElementById('darushimCustomRow').classList.remove('visible');
+      load();
+    }
+  };
+
+  window.darushimToggleCustom = function() {
+    currentFilter = 'custom';
+    ['today','week'].forEach(k => document.getElementById('dBtn-' + k).classList.remove('active'));
+    document.getElementById('dBtn-custom').classList.add('active');
+    document.getElementById('darushimCustomRow').classList.toggle('visible');
+  };
+
+  window.darushimApplyCustom = function() {
+    load();
+  };
+
+  // טעינה ראשונית ורענון כל 5 דקות
+  load();
+  setInterval(load, 5 * 60 * 1000);
+})();
+</script>
+
 </body>
 </html>
 
